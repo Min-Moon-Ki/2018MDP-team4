@@ -1,0 +1,29 @@
+package d20180312;
+
+import java.util.Enumeration;
+
+import gnu.io.CommPortIdentifier;
+import gnu.io.SerialPort;
+
+public class Reciver {
+
+	private static final int datarate = 9600;
+	private static final int[] uuid = {0,0,0};
+	
+	private int tx,rx;
+	
+	private SerialPort sp;
+	private String commName = "/dev/ttyACM0";
+	
+	public Reciver() {
+		
+	}
+	
+	public void run() {
+		Enumeration e = CommPortIdentifier.getPortIdentifiers();
+		
+		while(e.hasMoreElements()) {
+			CommPortIdentifier comPort = (CommPortIdentifier) e.nextElement();
+		}
+	}
+}

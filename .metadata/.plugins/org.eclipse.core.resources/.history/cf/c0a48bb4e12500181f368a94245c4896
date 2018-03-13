@@ -1,0 +1,11 @@
+package d20180312;
+
+public class Reciver {
+
+	private static final int[] uuid = {0,0,0};
+	int tx,rx;
+	
+	public Reciver() {
+		
+	}
+}
