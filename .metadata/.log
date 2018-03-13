@@ -175,3 +175,28 @@ org.eclipse.equinox.p2.core.ProvisionException: No repository found at http://rx
 
 !ENTRY org.eclipse.equinox.p2.metadata.repository 4 1000 2018-03-12 19:39:52.001
 !MESSAGE No repository found at http://www.rxtx.org/eclipse/mirrors.xml.
+!SESSION 2018-03-13 17:16:31.853 -----------------------------------------------
+eclipse.buildId=4.6.3.M20170301-0400
+java.version=1.8.0_144
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86, WS=win32, NL=ko_KR
+Framework arguments:  -product org.eclipse.epp.package.jee.product
+Command-line arguments:  -os win32 -ws win32 -arch x86 -product org.eclipse.epp.package.jee.product
+
+!ENTRY org.eclipse.jface.text 2 0 2018-03-13 17:19:34.053
+!MESSAGE Duplicate template id: 'org.eclipse.wst.xslt.templates.xpath.number'
+
+!ENTRY org.eclipse.jface.text 2 0 2018-03-13 17:19:34.061
+!MESSAGE Duplicate template id: 'org.eclipse.wst.xslt.templates.xpath.round'
+
+!ENTRY org.eclipse.equinox.p2.metadata.repository 4 1000 2018-03-13 17:19:57.806
+!MESSAGE No repository found at http://rxtx.qbang.org/eclipse/downloads/.
+
+!ENTRY org.eclipse.equinox.p2.metadata.repository 4 1000 2018-03-13 17:20:03.546
+!MESSAGE No repository found at http://www.rxtx.org/eclipse/mirrors.xml.
+
+!ENTRY org.eclipse.jface.text 2 0 2018-03-13 17:38:59.583
+!MESSAGE Duplicate template id: 'org.eclipse.wst.xslt.templates.xpath.number'
+
+!ENTRY org.eclipse.jface.text 2 0 2018-03-13 17:38:59.585
+!MESSAGE Duplicate template id: 'org.eclipse.wst.xslt.templates.xpath.round'

@@ -22,13 +22,10 @@ public class Reciver {
 	private SerialPort sp;
 	private String commName = "/dev/ttyACM0";
 	private CommPort cmp;
-	
-	private boolean flag = false;
-	private StringBuilder sb;
+
+	private int sending = -1;
 	
 	public Reciver() {
-		sb = new StringBuilder();
-		
 		@SuppressWarnings("rawtypes")
 		Enumeration e = CommPortIdentifier.getPortIdentifiers();
 				
@@ -62,23 +59,15 @@ public class Reciver {
 	
 	private void processing(int num) {
 		switch(num) {
-		case 's' :
-			flag = true;
-			break;
-		case 'e' :
-			flag = false;
-			break;
+			
 		}
-		if(flag) sb.append(num);
 	}
 	
-	public boolean send(int send) {
+	public void send(int send) {
 		try {
 			outpstr.write(send);
-			return true;
 		} catch (IOException e) {
 			e.printStackTrace();
-			return false;
 		}
 	}
 	
