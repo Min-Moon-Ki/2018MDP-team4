@@ -1,8 +1,10 @@
 package d20180312;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
+import java.awt.Point;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 
 import gnu.io.CommPort;
@@ -11,20 +13,24 @@ import gnu.io.PortInUseException;
 import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 
-public class Reciver {
+public class Reciver extends Thread {
 
-	private static final int datarate = 9600;
-	private static final int[] uuid = {0,0,0};
-
-	private BufferedInputStream inpstr;
-	private BufferedOutputStream outpstr;
+	private static final int DATARATE = 9600;
+	private static final int[] UUID = {0,0,0};
+	
+	private InputStream inpstr;
+	private PrintWriter outpstr;
 	
 	private SerialPort sp;
-	private String commName = "/dev/ttyACM0";
+	private String commName = "COM9";
 	private CommPort cmp;
 	
-	private boolean flag = false;
 	private StringBuilder sb;
+	private boolean flag = false;
+	
+	/*public static void main(String[] args) {
+		
+	}*/
 	
 	public Reciver() {
 		sb = new StringBuilder();
@@ -40,12 +46,13 @@ public class Reciver {
 						cmp = comPort.open(this.getClass().getName(),2000);
 						if(cmp instanceof SerialPort) {
 							sp = (SerialPort) cmp;
-							sp.setSerialPortParams(datarate, 
+							sp.setSerialPortParams(DATARATE, 
 									SerialPort.DATABITS_8, 
 									SerialPort.STOPBITS_1,
 									SerialPort.PARITY_NONE);
-							inpstr = new BufferedInputStream(sp.getInputStream());
-							outpstr = new BufferedOutputStream(sp.getOutputStream());
+							inpstr = sp.getInputStream();
+							outpstr = new PrintWriter(new OutputStreamWriter(sp.getOutputStream()));
+							System.out.println("Complete");
 						}
 					} catch (PortInUseException e1) {
 						e1.printStackTrace();
@@ -60,36 +67,71 @@ public class Reciver {
 		}	//while hasMoreElements
 	}	//constructor
 	
-	private void processing(int num) {
-		switch(num) {
-		case 's' :
-			flag = true;
-			break;
-		case 'e' :
-			flag = false;
-			break;
+	private void processing(String msg) {
+		boolean flag = false;
+		int temp,rid, tx = 0, rx = 0;
+		System.out.println(msg);
+		String[] str = msg.split(",");
+		for(String st : str) {
+			temp = 0;
+			System.out.println("st : " + st);
+			if(st.startsWith("uuid=")) {
+				temp = toInt(st);
+				for(int id : UUID) if(id == temp) flag = true;
+				if(!flag) break;
+				rid = temp;
+			}
+			if(st.startsWith("tx=")) {
+				temp = toInt(st);
+				tx = temp;
+			}
+			if(st.startsWith("rx=")) {
+				temp = toInt(st);
+				rx = temp;
+			}
+			System.out.println(temp);
 		}
-		if(flag) sb.append(num);
+		
 	}
 	
-	public boolean send(int send) {
-		try {
-			outpstr.write(send);
-			return true;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return false;
+	private int toInt(String msg){
+		boolean minus = false;
+		char[] m = msg.substring(msg.indexOf("=")+1).toCharArray();
+		int length = m.length;
+		int result = 0;
+		if(m[0] == '-') {
+			minus = true;
+			for(int i=0;i<m.length-1;i++) {
+				m[i]= m[i+1];
+			}
+			m[m.length-1] = 'N';
+			length -= 1;
 		}
+		for(int i=0;i<length;i++) {
+			if(m[i] >= '0' && m[i] <= '9') result += (m[i]-'0')*Math.pow(10, length-1-i);
+		}
+		return (minus)?(-result):(result);
+	}
+	
+	public synchronized void send(String msg) throws IOException {
+		outpstr.write(msg);
+		System.out.println("sending complete");
 	}
 	
 	public void run(){
 		try {
-			int temp;
 			while(true)
 			{
-				temp = inpstr.read();
+				int temp = inpstr.read();
 				if(temp != -1) {
-					processing(temp);
+					System.out.println((char)temp);
+					if(temp == 'E') {
+						flag = false;
+						processing(sb.toString());
+						sb.delete(0, sb.length());
+					}
+					if(flag)sb.append((char)temp);
+					if(temp == 'S') flag = true;
 				}
 			}
 		} catch(IOException e) {

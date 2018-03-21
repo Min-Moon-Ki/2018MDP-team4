@@ -1,0 +1,21 @@
+package d20180312;
+
+public class Direction {
+
+	private static final double CA = 2, CB = 2; 
+	private static double angleACD, angleBCD;
+	
+	public static void main(String[] args) {
+		heading(5, 13, 13);
+	}
+	
+	private static void heading(double ad, double cd, double bd) {
+		double cosACD,cosBCD;
+		cosACD = (cd + CA - ad) / (2 * Math.sqrt(cd) * Math.sqrt(CA));
+		cosBCD = (cd + CB - bd) / (2 * Math.sqrt(cd) * Math.sqrt(CB));
+		angleACD = (Math.acos(cosACD)/Math.PI)*180;
+		angleBCD = (Math.acos(cosBCD)/Math.PI)*180;
+		System.out.println(angleACD);
+		System.out.println(angleBCD);
+	}
+}
