@@ -1,0 +1,12 @@
+package d20180312;
+
+public class TestServer {
+
+	TestServer() {
+		
+	}
+	
+	public static void main(String[] args) {
+		new TestServer();
+	}
+}

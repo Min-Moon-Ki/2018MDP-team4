@@ -1,0 +1,62 @@
+package d20180312;
+
+import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.List;
+
+import com.github.sarxos.webcam.Webcam;
+import com.github.sarxos.webcam.WebcamResolution;
+
+public class TestServer {
+
+	private Webcam webcam;
+	private DataOutputStream out;
+	private Socket temp;
+	
+	TestServer() {
+		try {
+			ServerSocket sv = new ServerSocket(4240);
+			temp = sv.accept();
+			
+			try {
+				out = new DataOutputStream(temp.getOutputStream());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			
+			selectWebcam(0);
+			
+			while(true) {
+				BufferedImage img = webcam.getImage();
+				
+				byte[] imgBytes = ((DataBufferByte) img.getData().getDataBuffer()).getData();
+			
+				out.writeInt(img.getWidth());
+				out.writeInt(img.getHeight());
+				out.write(imgBytes);
+				
+				out.flush();
+			}
+			
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	private void selectWebcam(int select) {
+		List<Webcam> wclist = Webcam.getWebcams();
+		if(wclist.isEmpty()) webcam = Webcam.getDefault();
+		else webcam = wclist.get(select);
+		webcam.setViewSize(WebcamResolution.VGA.getSize());
+		webcam.open();
+		System.out.println("cam");
+	}
+	
+	public static void main(String[] args) {
+		new TestServer();
+	}
+}
