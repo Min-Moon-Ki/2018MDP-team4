@@ -8,5 +8,5 @@ public interface Bluetooth {
 
 	public void connectBluetooth(String name);
 	public byte readData();
-	public void writeData(byte data);
+	public void writeData(byte msg);
 }

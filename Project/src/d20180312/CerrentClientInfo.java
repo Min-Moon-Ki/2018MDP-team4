@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+
 /**
  * 현재접속해있는 유저의 정보
  * @author admin
@@ -41,7 +42,7 @@ public class CerrentClientInfo {
 	public String in() throws IOException {
 		String msg = null;
 		if(in.ready())
-			msg = (in.readLine()).trim();
+			msg = in.readLine().trim();
 		return msg;
 	}  
 	
@@ -71,5 +72,4 @@ public class CerrentClientInfo {
 			e.printStackTrace();
 		}
 	}
-	
 }

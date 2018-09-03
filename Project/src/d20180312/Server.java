@@ -8,27 +8,49 @@ import java.util.List;
 
 import com.github.sarxos.webcam.Webcam;
 import com.github.sarxos.webcam.WebcamResolution;
+import com.github.sarxos.webcam.ds.fswebcam.FsWebcamDriver;
 
 public class Server {
+	
+	private final String BLUETOOTH_NAME = "HC-06";
 	
 	private Webcam webcam;
 	private ServerSocket ssc;
 	private CerrentClientInfo cinfo;
-	private Bluetooth bluetooth = null;
-	private byte msg1 = 0;
-	private Thread stateChecker,androidSender;
+	private Bluetooth bluetooth;	//bluetooth communicate to FPGA
+	private byte msg1 = -1;	//command to send FPGA
+	private boolean reconnect = false;
+	private Thread stateChecker,androidSender,bluetoothSender;
 	private Server sv;
 	
+	/*
+	static {
+		Webcam.setDriver(new FsWebcamDriver());
+	}
+	
+	
 	/**
-	 * create ServerSocket(default port is 4240)
+	 * create ServerSocket(port is 4240)
 	 */
 	Server() {
-		this(4240);
-	}
-	Server(int port) {
 		try {
-			ssc = new ServerSocket(port);
+			ssc = new ServerSocket(4240);
 			sv = this;
+			bluetooth = new FPGA_Bluetooth();
+			bluetoothSender = new Thread() {	//with FPGA
+				@Override
+				public void run() {
+					//bluetooth.connectBluetooth(BLUETOOTH_NAME); //bluetooth name
+					while(true) {
+						if(msg1 != -1) {
+							System.out.println(msg1);
+							//bluetooth.writeData(msg1);
+							msg1 = -1;
+						}
+					}
+				}
+			};
+			bluetoothSender.start();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -43,28 +65,47 @@ public class Server {
 		cinfo = new CerrentClientInfo(ssc);
 		System.out.println("new Socket");
 	}
-	
+
+	/**
+	 * select Webcam number (select)
+	 * default is 0
+	 * @param select
+	 */
 	private void selectWebcam() {
 		selectWebcam(0);
 	}
+	/**
+	 * select Webcam number (select)
+	 * default is 0
+	 * @param select
+	 */
 	private void selectWebcam(int select) {
+		System.out.println("start to get Webcam");
 		List<Webcam> wclist = Webcam.getWebcams();
 		if(wclist.isEmpty()) webcam = Webcam.getDefault();
 		else webcam = wclist.get(select);
-		if(webcam.isOpen()) webcam.close();
-		webcam.setViewSize(WebcamResolution.VGA.getSize());
-		webcam.open();
-		System.out.println("cam");
+		if(webcam != null) {
+			if(webcam.isOpen()) webcam.close();
+			webcam.setViewSize(WebcamResolution.VGA.getSize());
+			webcam.open();
+			System.out.println("cam");
+		} else {
+			System.out.println("you don't have a cam");
+		}
 	}
 	
 	/**
-	 * read String from Android App 
+	 * read String from Android App and setting message
 	 * @throws IOException
 	 */
 	private void read() throws IOException {
-		String msg = cinfo.in();
+		String msg = cinfo.in();	//read form socket
 		if(msg != null) {
-			if(!msg.contains(":")) return;
+			System.out.println(msg);
+			if(msg.equals("stop")) {	//server reset command 
+				reconnect = true;
+			}
+			if(!msg.contains(":")) return; //Seperater ":"
 			
 	
 			String[] ms;
@@ -129,17 +170,20 @@ public class Server {
 		//msg1 = tobyte("00001000");	//°æº¸
 	}
 	
+	/**
+	 * start Thread to communicate with Android and FPGA
+	 */
 	public void start() {
 		if(stateChecker == null)
 			try {
 				selectWebcam();
 				acceptNewSocket();
-				run();
 				stateChecker = new Thread() {
 					@Override
 					public void run() {
 						while(true) {
-							if(androidSender.getState() == State.TERMINATED) {
+							if(androidSender.getState() == State.TERMINATED || reconnect == true) {
+								reconnect = false;
 								androidSender = null;
 								sv.start();
 								break;
@@ -147,8 +191,9 @@ public class Server {
 						}
 					}
 				};
-				
 				stateChecker.start();
+				
+				run();
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -168,23 +213,27 @@ public class Server {
 	private long last = -1;
 	private long delay = (long)(1000/frame);
 	
+	/**
+	 * create android communicate Thread and bluetooth communicate Thread
+	 */
 	private synchronized void run () {
-		androidSender = new Thread() {
+		androidSender = new Thread() {	//with Android
 			@Override
 			public void run() {
 				
 				while(cinfo != null) {
 					if(webcam == null) {
-						selectWebcam(0);
+						selectWebcam(1);
 					}
-					//streaming webcam;
+					//streaming webcam to socket;
 					long now = System.currentTimeMillis();
 					try {
 						if (now > last + delay) {
-							BufferedImage img = webcam.getImage();
-							if(img != null) cinfo.Imageout(img);
-							else System.out.println("null image");
-							System.out.println("send");
+							if(webcam != null) { 
+								BufferedImage img = webcam.getImage();
+								if(img != null) cinfo.Imageout(img);
+								else System.out.println("null image");
+							}
 							last = now;
 						}
 					} catch(IOException e) {
@@ -195,6 +244,13 @@ public class Server {
 						}
 						
 					}
+					
+					//receive command from Android for socket;
+					try {
+						read();
+					} catch(IOException e) {
+						e.printStackTrace();
+					}
 				}
 				
 			} 
@@ -202,20 +258,36 @@ public class Server {
 		
 		androidSender.start();
 	}
-	private String convertAngle(String angle) {
+	/**
+	 * convert integer to binary String
+	 * @param angle
+	 * @return
+	 */
+	private String convertAngle(String angle) {	 
 		StringBuilder sb = new StringBuilder();
 		int ang = 0;
 		char[] ch = angle.toCharArray();
 		for(int i = 0; i < ch.length; i++) ang += (ch[i]-'0') * Math.pow(10, i);
-		if(ang == 0) sb.append(0);
-		while(ang != 0) {
-			sb.append(ang%2);
-			ang /= 2;
+
+		/*
+		sb.append(ang%2);
+		sb.append(ang/2%2);
+		sb.append(ang/4%2);
+		sb.append(ang/8%2);
+		*/
+		
+		for(int i = 0; i < 4; i++) {
+			sb.append((ang / (int)Math.pow(2,i))%2);
 		}
 		
 		return sb.reverse().toString();
 	}
-	private String convertSpeed(String speed) {
+	/**
+	 * convert integer to binary String code
+	 * @param speed
+	 * @return
+	 */
+	private String convertSpeed(String speed) {	
 		String result = null;
 		
 		switch(speed) {
@@ -226,10 +298,18 @@ public class Server {
 		
 		return result;
 	}
-	private byte toByte(String msg) {
+	/**
+	 * convert String to byte
+	 * @param msg
+	 * @return
+	 */
+	private byte toByte(String msg) {	
 		byte b = 0;
 		char[] ch = msg.toCharArray();
-		for(int i = 0; i < ch.length; i++)	if(i > 7) break; else b += (ch[i]-'0') * Math.pow(2, i);
+		for(int i = 0; i < ch.length; i++) {
+			if(i > 7) break;
+			else b += (ch[i]-'0') * Math.pow(2, - (i - 7));
+		}
 		return b;
 	}
 	
@@ -237,4 +317,5 @@ public class Server {
 		Server sv = new Server();
 		sv.start();
 	}
+	
 }
