@@ -4,6 +4,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.SocketException;
+import java.util.LinkedList;
 import java.util.List;
 
 import com.github.sarxos.webcam.Webcam;
@@ -12,16 +13,16 @@ import com.github.sarxos.webcam.ds.fswebcam.FsWebcamDriver;
 
 public class Server {
 	
-	private final String BLUETOOTH_NAME = "HC-06";
+	private final String BLUETOOTH_NAME = "4JO";
 	
 	private Webcam webcam;
 	private ServerSocket ssc;
 	private CerrentClientInfo cinfo;
 	private Bluetooth bluetooth;	//bluetooth communicate to FPGA
-	private byte msg1 = -1;	//command to send FPGA
 	private boolean reconnect = false;
 	private Thread stateChecker,androidSender,bluetoothSender;
 	private Server sv;
+	private LinkedList<Byte> msglist;//commands to send FPGA
 	
 	/*
 	static {
@@ -36,16 +37,23 @@ public class Server {
 		try {
 			ssc = new ServerSocket(4240);
 			sv = this;
+			msglist = new LinkedList<Byte>();
 			bluetooth = new FPGA_Bluetooth();
 			bluetoothSender = new Thread() {	//with FPGA
 				@Override
 				public void run() {
 					//bluetooth.connectBluetooth(BLUETOOTH_NAME); //bluetooth name
 					while(true) {
-						if(msg1 != -1) {
-							System.out.println(msg1);
-							//bluetooth.writeData(msg1);
-							msg1 = -1;
+						if(msglist.isEmpty()) {
+							synchronized(bluetoothSender) {
+								try {
+									bluetoothSender.wait();
+								} catch(InterruptedException e) {
+									e.printStackTrace();
+								}
+							}
+						} else {
+							//bluetooth.writeData(msglist.pop());
 						}
 					}
 				}
@@ -122,52 +130,96 @@ public class Server {
 			switch(ms[0]) {
 			case "ST" :
 				//0000_0001;
-				msg1 = toByte("00000001");
+				msglist.add(toByte("00000001"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "MF" :
-				//0001_(speed)01
-				msg1 = toByte("0001"+convertSpeed(ms[1])+"1");
+				//0001_(speed)1
+				msglist.add(toByte("0001"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "MB" : 
-				//0010_(speed)01
-				msg1 = toByte("0010"+convertSpeed(ms[1])+"1");
+				//0010_(speed)1
+				msglist.add(toByte("0010"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "TL" : 
-				//0100_(speed)01
-				msg1 = toByte("0100"+convertSpeed(ms[1])+"1");
+				//0100_(speed)1
+				msglist.add(toByte("0100"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "TR" : 
-				//1000_(speed)01
-				msg1 = toByte("1000"+convertSpeed(ms[1])+"1");
+				//1000_(speed)1
+				msglist.add(toByte("1000"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "FL" : 
-				//0101_(speed)01
-				msg1 = toByte("0101"+convertSpeed(ms[1])+"1");
+				//0101_(speed)1
+				msglist.add(toByte("0101"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "FR" :
-				//1001_(speed)01 
-				msg1 = toByte("1001"+convertSpeed(ms[1])+"1");
+				//1001_(speed)1 
+				msglist.add(toByte("1001"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "BL" : 
-				//0110_(speed)01
-				msg1 = toByte("0110"+convertSpeed(ms[1])+"1");
+				//0110_(speed)1
+				msglist.add(toByte("0110"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			case "BR" : 
-				//1010_(speed)01
-				msg1 = toByte("1010"+convertSpeed(ms[1])+"1");
+				//1010_(speed)1
+				msglist.add(toByte("1010"+convertSpeed(ms[1])+"1"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 				
-			case "LO" : 
-				//0000_0010
-				msg1 = toByte("00000010");
-				break;
 			case "AN" :
 				//(angle)_0100
-				msg1 = toByte(convertAngle(ms[1])+"0100");
+				msglist.add(toByte(convertAngle(ms[1])+"0100"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
+				break;
+			case "CS" :
+				msglist.add(toByte("00110000"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
+				break;
+			case "CL" :
+				msglist.add(toByte("00110000"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
+				break;
+			case "CR" :
+				msglist.add(toByte("00010000"));
+				synchronized (bluetoothSender) {
+					bluetoothSender.notify();
+				}
 				break;
 			}
 		}
-		//msg1 = tobyte("00001000");	//경보
+		//msglist.add(tobyte("00001000"));	//경보
 	}
 	
 	/**
@@ -177,6 +229,7 @@ public class Server {
 		if(stateChecker == null)
 			try {
 				selectWebcam();
+				acceptNewSocket();
 				acceptNewSocket();
 				stateChecker = new Thread() {
 					@Override
@@ -233,6 +286,7 @@ public class Server {
 								BufferedImage img = webcam.getImage();
 								if(img != null) cinfo.Imageout(img);
 								else System.out.println("null image");
+								System.out.println("send");
 							}
 							last = now;
 						}
@@ -248,6 +302,8 @@ public class Server {
 					//receive command from Android for socket;
 					try {
 						read();
+					} catch(NullPointerException e) {
+						e.printStackTrace();
 					} catch(IOException e) {
 						e.printStackTrace();
 					}

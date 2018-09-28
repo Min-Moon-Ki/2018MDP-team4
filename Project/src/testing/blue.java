@@ -7,26 +7,18 @@ import d20180312.FPGA_Bluetooth;
 
 public class blue {
 
+	String str;
+	
 	blue() {
 		Bluetooth bt = new FPGA_Bluetooth();
 		
-		bt.connectBluetooth("4JO");
+		bt.connectBluetooth(null);
 		
 		Scanner kb = new Scanner(System.in);
-		
 		while(true) {
-			switch(kb.nextLine()) {
-				case "GO" :
-					byte by = toByte("00010011");
-					System.out.println(by);
-					bt.writeData(by);
-					break;
-				case "OFF" :
-					byte byt = toByte("00000001");
-					System.out.println(byt);
-					bt.writeData(byt);
-					break;
-			}
+			str = kb.nextLine();
+			bt.writeData(toByte(str));
+			System.out.println("send");
 		}
 	}
 	

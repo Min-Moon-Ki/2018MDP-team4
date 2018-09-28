@@ -47,6 +47,7 @@ public class CerrentClientInfo {
 	}  
 	
 	public synchronized void Imageout(BufferedImage img) throws IOException {
+		/*
 		byte[] imgBytes = ((DataBufferByte) img.getData().getDataBuffer()).getData();
 
 		out.writeInt(img.getWidth());
@@ -54,6 +55,26 @@ public class CerrentClientInfo {
 		out.write(imgBytes);
 
 		out.flush();
+		/**/
+
+		byte[] imgBytes = ((DataBufferByte) img.getData().getDataBuffer()).getData();
+		byte[] imgbytes = new byte[img.getWidth() * img.getHeight() * 3 / 4];
+		int index = 0;
+		for(int i = 0; i < img.getHeight() / 2; i++)
+			for(int j = 0; j < img.getWidth() / 2; j++)
+				if(i % 2 == 1 && j % 2 == 1) {
+					imgbytes[index] = imgBytes[index];
+					imgbytes[index+1] = imgBytes[index+1];
+					imgbytes[index+2] = imgBytes[index+2];
+					index += 3;
+				}
+
+		out.writeInt(img.getWidth()/2);
+		out.writeInt(img.getHeight()/2);
+		out.write(imgbytes);
+
+		out.flush();
+		/**/
 	}
 	
 	public boolean isclosed() {

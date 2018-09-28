@@ -91,7 +91,7 @@ public class FPGA_Bluetooth implements Bluetooth, DiscoveryListener {
 			}
 			
 			for(int i = 0; i < devicesFound.size(); i++) {
-				System.out.println(devicesFound.get(i).getFriendlyName(false));
+				//System.out.println(devicesFound.get(i).getFriendlyName(false));
 				if(devicesFound.get(i).getFriendlyName(false).equals(name)) {
 					device = devicesFound.get(i);
 				}
