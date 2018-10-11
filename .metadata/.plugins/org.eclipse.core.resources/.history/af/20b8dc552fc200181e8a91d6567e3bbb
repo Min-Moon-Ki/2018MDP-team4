@@ -1,9 +1,0 @@
-package main;
-
-import java.net.Socket;
-
-public class Users {
-
-	private Socket soc;
-	private String name;
-}

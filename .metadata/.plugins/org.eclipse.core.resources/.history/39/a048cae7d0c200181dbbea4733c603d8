@@ -1,6 +1,0 @@
-package main;
-
-import stand.communicate.Declearation;
-
-public class Door {
-}
