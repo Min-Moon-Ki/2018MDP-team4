@@ -1,0 +1,22 @@
+package main;
+
+import java.io.ObjectInputStream;
+import java.net.Socket;
+
+public class Users {
+
+	private ObjectInputStream ois;
+	private String name;
+	
+	Users(Socket soc, String name) {
+		ois = new ObjectInputStream(soc.getInputStream());
+		this.name = name;
+	}
+	public Socket getSocket() {
+		return soc;
+	}
+	
+	public boolean isName(String name) {
+		return this.name == name;
+	}
+}

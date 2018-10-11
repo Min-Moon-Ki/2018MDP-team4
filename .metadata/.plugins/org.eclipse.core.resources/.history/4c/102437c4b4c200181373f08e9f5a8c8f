@@ -1,0 +1,20 @@
+package main;
+
+import java.awt.image.BufferedImage;
+
+public class Declearation {
+
+	private String name;
+	private String location;
+	private String time;
+	private BufferedImage img;
+	
+	public String[] getInfo() {
+		String[] temp = {name, location, time};
+		return temp;
+	}
+	
+	public BufferedImage getImage() {
+		return img;
+	}
+}

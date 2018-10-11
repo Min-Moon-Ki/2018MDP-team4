@@ -1,0 +1,21 @@
+package main;
+
+import java.net.Socket;
+
+public class Users {
+
+	private Socket soc;
+	private String name;
+	
+	Users(Socket soc, String name) {
+		this.soc = soc;
+		this.name = name;
+	}
+	public Socket getSocket() {
+		return soc;
+	}
+	
+	public boolean isName(String name) {
+		return this.name == name;
+	}
+}

@@ -1,0 +1,34 @@
+package d20180312;
+
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class TestServer {
+
+	private BufferedReader in;
+	private DataOutputStream out;
+	private Socket temp;
+	
+	TestServer() {
+		try {
+			ServerSocket sv = new ServerSocket(4240);
+			temp = sv.accept();
+			try {
+				in = new BufferedReader(new InputStreamReader(temp.getInputStream()));
+				out = new DataOutputStream(temp.getOutputStream());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch(IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static void main(String[] args) {
+		new TestServer();
+	}
+}
