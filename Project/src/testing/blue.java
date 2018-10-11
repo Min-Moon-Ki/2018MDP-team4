@@ -18,7 +18,7 @@ public class blue {
 		while(true) {
 			str = kb.nextLine();
 			bt.writeData(toByte(str));
-			System.out.println("send");
+			System.out.println("send" + toByte(str));
 		}
 	}
 	

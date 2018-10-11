@@ -150,15 +150,15 @@ public class Server {
 				}
 				break;
 			case "TL" : 
-				//0100_(speed)1
-				msglist.add(toByte("0100"+convertSpeed(ms[1])+"1"));
+				//0100_1001
+				msglist.add(toByte("01001001"));
 				synchronized (bluetoothSender) {
 					bluetoothSender.notify();
 				}
 				break;
 			case "TR" : 
-				//1000_(speed)1
-				msglist.add(toByte("1000"+convertSpeed(ms[1])+"1"));
+				//1000_1001
+				msglist.add(toByte("10001001"));
 				synchronized (bluetoothSender) {
 					bluetoothSender.notify();
 				}
@@ -200,7 +200,7 @@ public class Server {
 				}
 				break;
 			case "CS" :
-				msglist.add(toByte("00110000"));
+				msglist.add(toByte("01010000"));
 				synchronized (bluetoothSender) {
 					bluetoothSender.notify();
 				}
@@ -230,7 +230,7 @@ public class Server {
 			try {
 				selectWebcam();
 				acceptNewSocket();
-				acceptNewSocket();
+				acceptNewSocket();	//android activity calls twice but idk;
 				stateChecker = new Thread() {
 					@Override
 					public void run() {
@@ -347,9 +347,9 @@ public class Server {
 		String result = null;
 		
 		switch(speed) {
-		case "0" : result = "001"; break;
-		case "34" : result = "010"; break;
-		case "68" : result = "100"; break;
+		case "0" : result = "000"; break;
+		case "34" : result = "001"; break;
+		case "68" : result = "010"; break;
 		}
 		
 		return result;
