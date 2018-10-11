@@ -24,7 +24,7 @@ public class Server {
 	private Server sv;
 	private LinkedList<Byte> msglist;//commands to send FPGA
 	
-	/*
+	
 	static {
 		Webcam.setDriver(new FsWebcamDriver());
 	}
@@ -42,7 +42,7 @@ public class Server {
 			bluetoothSender = new Thread() {	//with FPGA
 				@Override
 				public void run() {
-					//bluetooth.connectBluetooth(BLUETOOTH_NAME); //bluetooth name
+					bluetooth.connectBluetooth(BLUETOOTH_NAME); //bluetooth name
 					while(true) {
 						if(msglist.isEmpty()) {
 							synchronized(bluetoothSender) {
@@ -53,7 +53,7 @@ public class Server {
 								}
 							}
 						} else {
-							//bluetooth.writeData(msglist.pop());
+							bluetooth.writeData(msglist.pop());
 						}
 					}
 				}
