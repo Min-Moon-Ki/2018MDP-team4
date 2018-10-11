@@ -248,15 +248,7 @@ public class Main extends JFrame {
 							}
 						else
 							for(Users user : userlist) {
-								try {
-									Object obj = user.getOIS().readObject();
-									if(obj instanceof Declearation) {
-										addDeclaration((Declearation)obj);
-									}
-								} catch (ClassNotFoundException e) {
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
+								addDeclaration(user.readDeclear());
 							}
 					}
 				}

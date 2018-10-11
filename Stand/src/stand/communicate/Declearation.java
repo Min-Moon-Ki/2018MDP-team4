@@ -11,10 +11,10 @@ public class Declearation implements Serializable {
 	private String time;
 	private BufferedImage img;
 	
-	Declearation (String[] parts) {
+	public Declearation (String[] parts) {
 		this(parts[0],parts[1],parts[2]);
 	}
-	Declearation (String name, String location, String time) {
+	public Declearation (String name, String location, String time) {
 		this.name = name;
 		this.location = location;
 		this.time = time;
