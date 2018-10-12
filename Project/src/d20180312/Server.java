@@ -13,7 +13,7 @@ import com.github.sarxos.webcam.ds.fswebcam.FsWebcamDriver;
 
 public class Server {
 	
-	private final String BLUETOOTH_NAME = "4JO";
+	private final String BLUETOOTH_NAME = null;
 	
 	private Webcam webcam;
 	private ServerSocket ssc;

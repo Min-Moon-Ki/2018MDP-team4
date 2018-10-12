@@ -43,6 +43,7 @@ public class FPGA_Bluetooth implements Bluetooth, DiscoveryListener {
 			connection = (StreamConnection)Connector.open("btspp://201607274399:1;authenticate=false;encrypt=false;master=false");
 			din = connection.openDataInputStream();
 			dout = connection.openDataOutputStream();
+			System.out.println("Bluetooth connected");
 		} catch(BluetoothConnectionException e) {
 			switch(e.getStatus()) {
 				case BluetoothConnectionException.FAILED_NOINFO : System.out.println("FAILED_NOINFO"); break;
@@ -56,7 +57,6 @@ public class FPGA_Bluetooth implements Bluetooth, DiscoveryListener {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Bluetooth connected");
 	}
 	/**
 	 * reset the Data and connect Bluetooth with (name)
@@ -92,8 +92,12 @@ public class FPGA_Bluetooth implements Bluetooth, DiscoveryListener {
 			
 			for(int i = 0; i < devicesFound.size(); i++) {
 				//System.out.println(devicesFound.get(i).getFriendlyName(false));
-				if(devicesFound.get(i).getFriendlyName(false).equals(name)) {
-					device = devicesFound.get(i);
+				try {
+					if(devicesFound.get(i).getFriendlyName(false).equals(name)) {
+						device = devicesFound.get(i);
+					}
+				} catch(IOException e) {
+					e.printStackTrace();
 				}
 			}
 			
