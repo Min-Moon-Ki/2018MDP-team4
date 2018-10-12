@@ -24,7 +24,7 @@ public class Server {
 	private Server sv;
 	private LinkedList<Byte> msglist;//commands to send FPGA
 	
-	
+	/*
 	static {
 		Webcam.setDriver(new FsWebcamDriver());
 	}
@@ -285,8 +285,6 @@ public class Server {
 							if(webcam != null) { 
 								BufferedImage img = webcam.getImage();
 								if(img != null) cinfo.Imageout(img);
-								else System.out.println("null image");
-								System.out.println("send");
 							}
 							last = now;
 						}
